@@ -34,7 +34,12 @@ export type Resource =
   | 'reports'
   | 'annual-calendar'
   | 'case-manager'
-  | 'rbac-admin';   // only super-admin can manage roles
+  | 'rbac-admin'   // only super-admin can manage roles
+  | 'subscription'
+  |'medical records'
+  |'lab & reports'
+  |'telemedicine'
+  |'support';
 
 export type Permission = `${Resource}:${Action}`;
 
@@ -57,6 +62,7 @@ const resourcePerms = (resource: Resource, actions: Action[]): Permission[] =>
 
 export type RoleId =
   | 'super_admin'
+  | 'patient'
   | 'hospital_admin'
   | 'doctor'
   | 'nurse'
@@ -68,7 +74,8 @@ export type RoleId =
   | 'radiologist'
   | 'case_manager_role'
   | 'ambulance_staff'
-  | 'tpa_executive';
+  | 'tpa_executive'
+  
 
 export interface Role {
   id: RoleId;
@@ -81,25 +88,47 @@ export interface Role {
 }
 
 export const ROLES: Record<RoleId, Role> = {
-  super_admin: {
-    id: 'super_admin',
-    name: 'Super Admin',
-    description: 'Full unrestricted access to all modules including RBAC management',
-    color: 'text-red-700',
-    bgColor: 'bg-red-100',
-    isSystemRole: true,
-    permissions: [
-      // All resources, all actions
-      ...(['dashboard','patients','doctors','appointments','departments','bed-management',
-           'prescriptions','pharmacy','billing','insurance','opd','inventory','blood-bank',
-           'pathology','radiology','ambulance','birth-death','human-resources','duty-roster',
-           'qr-attendance','front-office','tpa','finance','messaging','certificates',
-           'live-consultancy','reports','annual-calendar','case-manager','rbac-admin'] as Resource[])
-        .flatMap(r => resourcePerms(r, ALL_ACTIONS))
-    ],
-  },
+super_admin: {
+  id: 'super_admin',
+  name: 'Super Admin',
+  description: 'Full unrestricted access to all modules including RBAC management',
+  color: 'text-red-700',
+  bgColor: 'bg-red-100',
+  isSystemRole: true,
+  permissions: [
+    // All resources, all actions
+    ...(['dashboard','patients','doctors','appointments','departments','bed-management',
+         'prescriptions','pharmacy','billing','insurance','opd','inventory','blood-bank',
+         'pathology','radiology','ambulance','birth-death','human-resources','duty-roster',
+         'qr-attendance','front-office','tpa','finance','messaging','certificates',
+         'live-consultancy','reports','annual-calendar','case-manager','rbac-admin',] as Resource[])
+      .flatMap(r => resourcePerms(r, ALL_ACTIONS))
+  ],
+},
 
-  hospital_admin: {
+patient: {
+  id: 'patient',
+  name: 'Patient',
+  description: 'Patient portal access to personal health records and appointments',
+  color: 'text-gray-700',
+  bgColor: 'bg-gray-100',
+  isSystemRole: true,
+  permissions: [
+    ...resourcePerms('dashboard', READ_ONLY),
+   
+    ...resourcePerms('appointments', ['view', 'create']),
+    ...resourcePerms('prescriptions', READ_ONLY),
+    ...resourcePerms('medical records', READ_ONLY),
+    ...resourcePerms('lab & reports', READ_ONLY),
+    ...resourcePerms('messaging', READ_WRITE),
+    ...resourcePerms('certificates', READ_ONLY),
+    ...resourcePerms('billing', READ_ONLY),
+      ...resourcePerms('telemedicine', READ_ONLY),
+      ...resourcePerms('support',READ_ONLY)
+  ],
+},
+
+hospital_admin: {
     id: 'hospital_admin',
     name: 'Hospital Admin',
     description: 'Administrative access to all hospital operations except RBAC management',
@@ -136,6 +165,8 @@ export const ROLES: Record<RoleId, Role> = {
       ...resourcePerms('reports', ALL_ACTIONS),
       ...resourcePerms('annual-calendar', ALL_ACTIONS),
       ...resourcePerms('case-manager', ALL_ACTIONS),
+      ...resourcePerms('subscription', ALL_ACTIONS),
+   
     ],
   },
 

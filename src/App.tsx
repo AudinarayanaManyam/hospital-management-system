@@ -35,7 +35,12 @@ import LiveConsultancy from './pages/LiveConsultancy';
 import Reports from './pages/Reports';
 import AnnualCalendar from './pages/AnnualCalendar';
 import CaseManager from './pages/CaseManager';
-
+import Subscription from './pages/Subscription';
+import PatientDashboard from './pages/PatientDashboard';
+import PatientAppointment from './pages/PatientAppointment';
+import PrescriptionPatient from './pages/PrescriptionPatient';
+import BillingPayment from './pages/BillingPayment';
+import MedicalRecords from './pages/MedicalRecords';
 export type PageType =
   | 'dashboard' | 'patients' | 'doctors' | 'appointments' | 'departments'
   | 'bed-management' | 'prescriptions' | 'pharmacy' | 'billing' | 'insurance'
@@ -43,10 +48,49 @@ export type PageType =
   | 'ambulance' | 'birth-death' | 'human-resources' | 'duty-roster'
   | 'qr-attendance' | 'front-office' | 'tpa' | 'finance' | 'messaging'
   | 'certificates' | 'live-consultancy' | 'reports' | 'annual-calendar'
-  | 'case-manager' | 'rbac-admin';
+  | 'case-manager' | 'rbac-admin' | 'subscription' | 'medical-records' | 'lab-reports' | 'telemedicine' | 'support';
+import LabReports from './pages/LabReports';
+import Telemedicine from './pages/Telemedicine';
+import Support from './pages/Support';
+
 
 function ProtectedPage({ page, onNavigate }: { page: PageType; onNavigate: (p: PageType) => void }) {
-  const { canPage, addAudit } = useAuth();
+  const { canPage, addAudit, currentUser } = useAuth();
+
+  // If patient, always show PatientDashboard for dashboard page
+  if (currentUser?.roleId === 'patient') {
+    if (page === 'dashboard') {
+      return <PatientDashboard />;
+    }
+    if (page === 'appointments') {
+      // Show PatientAppointment page for patients
+      return <PatientAppointment />;
+    }
+    if (page === 'prescriptions') {
+      // Show PrescriptionPatient page for patients
+      return <PrescriptionPatient />;
+    }
+    if (page === 'billing') {
+      // Show BillingPayment page for patients
+      return <BillingPayment />;
+    }
+    if (page === 'medical-records') {
+      // Show MedicalRecords page for patients
+      return <MedicalRecords />;
+    }
+    if (page === 'lab-reports') {
+      // Show LabReports page for patients
+      return <LabReports />;
+    }
+    if (page === 'telemedicine') {
+      // Show Telemedicine page for patients
+      return <Telemedicine />;
+    }
+    if (page === 'support') {
+      // Show Support page for patients
+      return <Support />;
+    }
+  }
 
   if (page === 'dashboard') return <Dashboard onNavigate={onNavigate} />;
 
@@ -78,6 +122,7 @@ function ProtectedPage({ page, onNavigate }: { page: PageType; onNavigate: (p: P
     case 'front-office':      return <FrontOffice />;
     case 'tpa':               return <TPA />;
     case 'finance':           return <Finance />;
+    case 'subscription':      return <Subscription />;
     case 'messaging':         return <Messaging />;
     case 'certificates':      return <Certificates />;
     case 'live-consultancy':  return <LiveConsultancy />;

@@ -18,6 +18,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     await new Promise(r => setTimeout(r, 600)); // simulate network
+    // Find user by email
+  
     const result = login(email.trim(), password);
     setLoading(false);
     if (!result.ok) setError(result.error ?? 'Login failed');
@@ -40,6 +42,8 @@ export default function LoginPage() {
     { email: 'arjun@medicore.in', password: 'Lab@12345', name: 'Arjun Singh', role: 'lab_technician' },
     { email: 'billing@medicore.in', password: 'Billing@123', name: 'Priya Finance', role: 'billing_staff' },
     { email: 'hr@medicore.in', password: 'HRMgr@123', name: 'Sanjay HR', role: 'hr_manager' },
+    { email: 'patient@medicore.in', password: 'Pati@123', name: 'Patient', role: 'patient' }
+
   ] as const;
 
   return (

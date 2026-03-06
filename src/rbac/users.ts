@@ -170,4 +170,16 @@ export const USERS: User[] = [
     createdAt: '2022-11-01T00:00:00',
     failedAttempts: 0,
   },
+  {
+    id: 'U013',
+    name: 'Patient Demo',
+    email: 'patient@medicore.in',
+    password: 'Pati@123',
+    roleId: 'patient',
+    phone: '9900001200',
+    isActive: true,
+    lastLogin: '',
+    createdAt: '2024-03-01T00:00:00',
+    failedAttempts: 0,
+  },
 ];

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Search, Plus, Phone, Mail, Star } from 'lucide-react';
 import { mockDoctors } from '../utils/mockData';
@@ -19,6 +18,8 @@ export default function Doctors() {
     schedule: '',
   });
   const [error, setError] = useState('');
+  const [editModal, setEditModal] = useState<{ open: boolean; doctor: any | null }>({ open: false, doctor: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; doctorId: string | null }>({ open: false, doctorId: null });
 
   const filtered = doctors.filter(d =>
     d.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,6 +46,29 @@ export default function Doctors() {
     ]);
     setShowModal(false);
     setForm({ name: '', specialization: '', qualification: '', phone: '', email: '', department: '', experience: '', status: 'Active', schedule: '' });
+  };
+
+  const handleEdit = (doctor: any) => {
+    setEditModal({ open: true, doctor });
+    setForm({ ...doctor, experience: String(doctor.experience) });
+    setError('');
+  };
+
+  const handleEditSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!form.name || !form.specialization || !form.qualification || !form.phone || !form.department || !form.experience) {
+      setError('Please fill all required fields.');
+      return;
+    }
+    setDoctors(prev => prev.map(d => d.id === editModal.doctor.id ? { ...d, ...form, experience: Number(form.experience), status: form.status as 'Active' | 'On Leave' | 'Off Duty' } : d));
+    setEditModal({ open: false, doctor: null });
+    setForm({ name: '', specialization: '', qualification: '', phone: '', email: '', department: '', experience: '', status: 'Active', schedule: '' });
+  };
+
+  const handleDelete = (doctorId: string) => {
+    setDoctors(prev => prev.filter(d => d.id !== doctorId));
+    setDeleteModal({ open: false, doctorId: null });
   };
 
   return (
@@ -86,6 +110,10 @@ export default function Doctors() {
               <span>{d.experience} yrs exp.</span>
             </div>
             <div className="mt-1 text-xs text-gray-400">{d.schedule}</div>
+            <div className="flex gap-2 mt-3">
+              <button className="btn-secondary" onClick={() => handleEdit(d)}>Edit</button>
+              <button className="btn-danger" onClick={() => setDeleteModal({ open: true, doctorId: d.id })}>Delete</button>
+            </div>
           </div>
         ))}
       </div>
@@ -148,6 +176,80 @@ export default function Doctors() {
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Doctor Modal */}
+      {editModal.open && (
+        <div className="modal-overlay" onClick={() => setEditModal({ open: false, doctor: null })}>
+          <div className="modal p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Edit Doctor</h3>
+            {error && <div className="mb-3 text-red-600 text-sm">{error}</div>}
+            <form className="space-y-3" onSubmit={handleEditSave}>
+              <div>
+                <label className="label">Full Name</label>
+                <input className="input" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="label">Specialization</label>
+                  <input className="input" value={form.specialization} onChange={e => setForm(f => ({ ...f, specialization: e.target.value }))} required />
+                </div>
+                <div className="flex-1">
+                  <label className="label">Qualification</label>
+                  <input className="input" value={form.qualification} onChange={e => setForm(f => ({ ...f, qualification: e.target.value }))} required />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="label">Phone</label>
+                  <input className="input" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} required />
+                </div>
+                <div className="flex-1">
+                  <label className="label">Email</label>
+                  <input className="input" type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="label">Department</label>
+                  <input className="input" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} required />
+                </div>
+                <div className="flex-1">
+                  <label className="label">Experience (years)</label>
+                  <input className="input" type="number" min={0} value={form.experience} onChange={e => setForm(f => ({ ...f, experience: e.target.value }))} required />
+                </div>
+              </div>
+              <div>
+                <label className="label">Status</label>
+                <select className="input" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+                  <option>Active</option>
+                  <option>On Leave</option>
+                  <option>Off Duty</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Schedule (optional)</label>
+                <input className="input" value={form.schedule} onChange={e => setForm(f => ({ ...f, schedule: e.target.value }))} />
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button type="submit" className="btn-primary">Save</button>
+                <button type="button" className="btn-secondary" onClick={() => setEditModal({ open: false, doctor: null })}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Doctor Modal */}
+      {deleteModal.open && (
+        <div className="modal-overlay" onClick={() => setDeleteModal({ open: false, doctorId: null })}>
+          <div className="modal p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Delete Doctor</h3>
+            <p className="mb-4">Are you sure you want to delete this doctor?</p>
+            <div className="flex gap-3">
+              <button className="btn-danger" onClick={() => handleDelete(deleteModal.doctorId!)}>Delete</button>
+              <button className="btn-secondary" onClick={() => setDeleteModal({ open: false, doctorId: null })}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
